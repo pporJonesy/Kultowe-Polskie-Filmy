@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movies Every Polish Person Knows</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a;padding:2rem 1rem}
+  .container{max-width:960px;margin:0 auto}
+  h1{font-size:2rem;font-weight:700;margin-bottom:0.5rem}
+  .subtitle{color:#666;font-size:1rem;margin-bottom:2rem}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2rem}
+  .filter-btn{padding:7px 16px;border-radius:20px;border:1.5px solid #ddd;background:#fff;color:#555;font-size:13px;cursor:pointer;transition:all 0.15s;font-family:inherit}
+  .filter-btn:hover{border-color:#aaa}
+  .filter-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+  .decade-section{margin-bottom:2.5rem}
+  .decade-label{font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid #e5e5e5}
+  .films-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+  .film-card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:14px 16px;transition:border-color 0.15s,box-shadow 0.15s}
+  .film-card:hover{border-color:#ccc;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+  .film-header{display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;gap:8px}
+  .film-title{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:5px;line-height:1.3}
+  .film-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+  .film-year{font-size:12px;color:#999}
+  .genre-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+  .serial-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:#fff8e6;color:#b07800;font-weight:500}
+  .g-komedia{background:#eafaea;color:#1a7a1a}
+  .g-dramat{background:#e6f0ff;color:#1a4ab0}
+  .g-kryminal{background:#fff3e6;color:#a05000}
+  .g-historyczny{background:#fce6f0;color:#9a1a50}
+  .chevron{font-size:14px;color:#bbb;transition:transform 0.2s;flex-shrink:0;margin-top:2px}
+  .chevron.open{transform:rotate(180deg)}
+  .film-desc{font-size:13px;color:#555;line-height:1.65;margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0;display:none}
+  .film-desc.open{display:block}
+  .watch-link{display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;font-weight:500;color:#d00;text-decoration:none;padding:5px 12px;border-radius:20px;border:1px solid #fcc;background:#fff5f5;transition:background 0.15s}
+  .watch-link:hover{background:#ffe8e8}
+  .count{font-size:13px;color:#999;margin-bottom:1.5rem}
+  @media(max-width:500px){.films-grid{grid-template-columns:1fr}h1{font-size:1.5rem}}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Movies Every Polish Person Knows</h1>
+  <p class="subtitle">A curated list by <strong>Polish Progress with Jan</strong> — and you should know them too.</p>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filter(this,'all')">Wszystkie</button>
+    <button class="filter-btn" onclick="filter(this,'komedia')">Komedia</button>
+    <button class="filter-btn" onclick="filter(this,'dramat')">Dramat</button>
+    <button class="filter-btn" onclick="filter(this,'kryminal')">Kryminał</button>
+    <button class="filter-btn" onclick="filter(this,'historyczny')">Historyczny</button>
+    <button class="filter-btn" onclick="filter(this,'serial')">Seriale</button>
+  </div>
+
+  <div class="count" id="count"></div>
+  <div id="content"></div>
+</div>
+
+<script>
+const films = [
+  {t:"Zakazane piosenki",y:1947,g:"historyczny",d:"40s",serial:false,yt:"Zakazane piosenki 1947 cały film",desc:"Jeden z pierwszych polskich filmów powojennych. Opowiada o warszawskim ulicznym śpiewaku, który w czasie okupacji przemyca zakazane patriotyczne piosenki. Wzruszający dokument epoki — i świetne wprowadzenie do polskiego poczucia dumy narodowej."},
+  {t:"Zezowate szczęście",y:1960,g:"komedia",d:"60s",serial:false,yt:"Zezowate szczęście 1960 cały film",desc:"Komedia o człowieku, któremu przez całe życie nie wychodzi nic — mimo szczerych starań. Historia Polski XX wieku opowiedziana przez pryzmat jednego pechowca. Bogumił Kobiela w roli głównej to majstersztyk."},
+  {t:"Sami swoi",y:1967,g:"komedia",d:"60s",serial:false,yt:"Sami swoi 1967 cały film",desc:"Kultowa komedia o dwóch zwaśnionych rodzinach — Kargulach i Pawlakach — które po wojnie trafiają na sąsiednie działki na ziemiach odzyskanych. Pełna polskiego humoru, ciepła i tekstów, które Polacy cytują do dziś."},
+  {t:"Czterej pancerni i pies",y:1966,g:"historyczny",d:"60s",serial:true,yt:"Czterej pancerni i pies serial",desc:"Legendarny serial o załodze czołgu Rudy i ich psie Szariku walczących na froncie wschodnim II wojny światowej. Oglądały go całe pokolenia Polaków — znajomość serialu to obowiązkowa część polskiej tożsamości kulturowej."},
+  {t:"Poszukiwany poszukiwana",y:1972,g:"komedia",d:"70s",serial:false,yt:"Poszukiwany poszukiwana 1972 cały film",desc:"Komedia z Jerzym Gruzdą w roli mężczyzny, który — żeby uniknąć kłopotów — przebrany za kobietę trafia do żeńskiego akademika. Absurdalny humor, świetne dialogi i jeden z najzabawniejszych filmów PRL-u."},
+  {t:"Nie lubię poniedziałków",y:1971,g:"komedia",d:"70s",serial:false,yt:"Nie lubię poniedziałków 1971 cały film",desc:"Lekka komedia o codziennym życiu w Polsce lat 70. — pracy, miłości i małych życiowych frustracjach. Idealny film żeby poczuć jak wyglądało normalne życie w PRL-u."},
+  {t:"Lalka",y:1977,g:"dramat",d:"70s",serial:true,yt:"Lalka serial 1977",desc:"Adaptacja powieści Bolesława Prusa — jednej z najważniejszych w polskiej literaturze. Historia kupca Wokulskiego zakochanego w arystokratce Izabeli Łęckiej. Bogata polszczyzna, wielkie emocje i portret polskiego społeczeństwa XIX wieku."},
+  {t:"Czterdziestolatek",y:1974,g:"komedia",d:"70s",serial:true,yt:"Czterdziestolatek serial 1974",desc:"Serial o inżynierze Karwowskim przeżywającym kryzys wieku średniego w PRL-owskiej rzeczywistości. Pełen ironii i ciepłego humoru — kultowy dla kilku pokoleń Polaków."},
+  {t:"Miś",y:1980,g:"komedia",d:"80s",serial:false,yt:"Miś 1980 cały film",desc:"Absolutny szczyt polskiej komedii. Prezes klubu sportowego kombinuje jak wyłudzić dolary zza granicy. Satyra na PRL tak celna, że cytaty z tego filmu weszły na stałe do polskiego języka. Obowiązkowy punkt startowy dla każdego uczącego się polskiego."},
+  {t:"Vabank",y:1981,g:"kryminal",d:"80s",serial:false,yt:"Vabank 1981 cały film",desc:"Elegancki film noir osadzony w przedwojennej Warszawie. Kasjer bankowy wychodzi z więzienia i planuje zemstę na człowieku, który go wrobił. Znakomity Maklakiewicz, stylowe dialogi i klimat lat 30. — polska odpowiedź na Hollywood."},
+  {t:"Człowiek z żelaza",y:1981,g:"dramat",d:"80s",serial:false,yt:"Człowiek z żelaza 1981 cały film",desc:"Andrzej Wajda nakręcił ten film dosłownie w trakcie narodzin Solidarności. Dokument i fikcja przeplatają się w opowieści o strajkach w Gdańsku. Złota Palma w Cannes — jeden z najważniejszych polskich filmów w historii."},
+  {t:"Seksmisja",y:1983,g:"komedia",d:"80s",serial:false,yt:"Seksmisja 1983 cały film",desc:"Dwaj mężczyźni budzą się po hibernacji w świecie zamieszkałym wyłącznie przez kobiety. Komedia sci-fi, która pod przykrywką absurdalnego humoru przemyca ostrą satyrę na totalitaryzm. Juliusz Machulski w szczytowej formie."},
+  {t:"Akademia Pana Kleksa",y:1983,g:"komedia",d:"80s",serial:false,yt:"Akademia Pana Kleksa 1983 cały film",desc:"Magiczna szkoła, gdzie uczy niezwykły profesor Kleks. Film dla dzieci, który wychował całe pokolenia Polaków — każdy go zna, każdy kocha. Piotr Fronczewski jako Kleks to rola ikoniczna."},
+  {t:"Alternatywy 4",y:1983,g:"komedia",d:"80s",serial:true,yt:"Alternatywy 4 serial 1983",desc:"Serial Barei o mieszkańcach jednego bloku w PRL-owskiej Warszawie. Każdy odcinek to osobna satyra na absurdy systemu — kolejki, donosy, układy. Jeden z najzabawniejszych i najcelniejszych obrazów życia w PRL-u."},
+  {t:"Vabank II",y:1984,g:"kryminal",d:"80s",serial:false,yt:"Vabank II 1984 cały film",desc:"Kontynuacja przygód Kwinty i Moki — tym razem w jeszcze bardziej skomplikowanej grze z przestępcami. Równie stylowy i dowcipny jak jedynka. Machulski potwierdza, że polska kryminalna komedia może być światowej klasy."},
+  {t:"Znachor",y:1982,g:"dramat",d:"80s",serial:false,yt:"Znachor 1982 cały film",desc:"Wybitny chirurg traci pamięć i żyje jako wiejski znachor. Melodramat pełen wzruszeń, który Polacy oglądają co roku — szczególnie w święta. Jerzy Bińczycki w roli tytułowej stworzył jedną z najbardziej rozpoznawalnych postaci polskiego kina."},
+  {t:"Konopielka",y:1982,g:"dramat",d:"80s",serial:false,yt:"Konopielka 1982 cały film",desc:"Film o chłopie, który buntuje się gdy do jego wsi przyjeżdża nauczycielka i próbuje wprowadzić nowoczesność. Poetycki, surowy i bardzo polski — opowiada o zderzeniu tradycji z nowoczesnością językiem, którego nie znajdziesz w żadnym podręczniku."},
+  {t:"Jańcio Wodnik",y:1993,g:"dramat",d:"90s",serial:false,yt:"Jańcio Wodnik 1993 cały film",desc:"Magiczny realizm w polskim wydaniu. Chłopiec urodzony nad rzeką ma niezwykły związek z wodą. Film Jana Jakuba Kolskiego pełen poetyckiego języka i surowego piękna polskiej wsi — zupełnie inny niż wszystko inne na tej liście."},
+  {t:"Psy",y:1992,g:"kryminal",d:"90s",serial:false,yt:"Psy 1992 cały film",desc:"Franz Maurer — esbek, który po transformacji trafia do policji. Brutalny, bezkompromisowy obraz Polski lat 90. Bogusław Linda stworzył tu rolę życia. Pełen slangu, przekleństw i języka ulicy — dla średniozaawansowanych to kopalnia złota."},
+  {t:"Psy 2: Ostatnia krew",y:1994,g:"kryminal",d:"90s",serial:false,yt:"Psy 2 Ostatnia krew 1994 cały film",desc:"Maurer wraca — tym razem głębiej w świat przestępczy. Równie mroczna i równie dobra co jedynka. Lata 90. w Polsce to był dziki zachód i ten film to pokazuje lepiej niż jakikolwiek dokument."},
+  {t:"Czas surferów",y:1993,g:"dramat",d:"90s",serial:false,yt:"Czas surferów 1993 cały film",desc:"Młodzi ludzie w Polsce tuż po transformacji — wolność, chaos, nowe możliwości i zagubienie. Portret pokolenia, które wchodziło w dorosłość gdy zmieniał się cały świat. Autentyczny język ulicy lat 90."},
+  {t:"Rozmowy kontrolowane",y:1991,g:"komedia",d:"90s",serial:false,yt:"Rozmowy kontrolowane 1991 cały film",desc:"Komedia o funkcjonariuszu SB, który przez pomyłkę trafia pod obserwację własnych służb. Absurdalny humor i celna satyra na aparat bezpieczeństwa PRL-u — Cezary Pazura w jednej ze swoich najlepszych ról."},
+  {t:"Świat według Kiepskich",y:1999,g:"komedia",d:"90s",serial:true,yt:"Świat według Kiepskich serial",desc:"Najpopularniejszy polski sitcom wszech czasów. Rodzina Kiepskich — bezrobotny Ferdek, jego żona Halinka i sąsiedzi — to obraz polskiej klasy robotniczej z niesamowitym poczuciem humoru. Kopalnia slangu, potocznych wyrażeń i polskiego humoru."},
+  {t:"Ogniem i mieczem",y:1999,g:"historyczny",d:"90s",serial:false,yt:"Ogniem i mieczem 1999 cały film",desc:"Wielka superprodukcja na podstawie powieści Sienkiewicza. Kozackie powstanie, miłość, honor i zdrada w XVII-wiecznej Rzeczpospolitej. Największy przebój kinowy w historii polskiego kina — bilety wyprzedawały się na tygodnie naprzód."},
+  {t:"Sztos",y:1997,g:"kryminal",d:"90s",serial:false,yt:"Sztos 1997 cały film",desc:"Komedia kryminalna o sprytnym naciągaczu, który wplątuje się w coraz większe kłopoty. Pazura w szczytowej formie, naturalny język lat 90. i świetna chemia między aktorami. Lekki, zabawny i pełen ówczesnego slangu."},
+  {t:"Kiler",y:1997,g:"komedia",d:"90s",serial:false,yt:"Kiler 1997 cały film",desc:"Taksówkarz przez pomyłkę wzięty za płatnego zabójcę. Kultowa komedia Juliusza Machulskiego z Cezarym Pazurą w roli głównej. Mnóstwo gier słownych, slangu i cytatów, które Polacy znają na pamięć do dziś."},
+  {t:"Kiler-ów 2-óch",y:1999,g:"komedia",d:"90s",serial:false,yt:"Kiler-ów 2-óch 1999 cały film",desc:"Kontynuacja przygód Jurka Kilera — tym razem w jeszcze bardziej absurdalnych sytuacjach. Równie dobra co jedynka i równie bogata w cytaty. Obowiązkowa pozycja po obejrzeniu pierwszej części."},
+  {t:"Chłopaki nie płaczą",y:1999,g:"komedia",d:"90s",serial:false,yt:"Chłopaki nie płaczą 1999 cały film",desc:"Gangsterska komedia o byłym przestępcy, który próbuje żyć uczciwie. Pazura, Kot i Karolak tworzą trio, które weszło do historii polskiego kina. Pełna slangu z przełomu wieków i ciepłego humoru mimo kryminalnego tła."},
+  {t:"Ranczo",y:2006,g:"komedia",d:"00s",serial:true,yt:"Ranczo serial",desc:"Polska Amerykanka wraca do małej wioski i wywraca życie mieszkańców do góry nogami. Serial pełen ciepłego humoru, polskiej prowincji i mądrych obserwacji o tym jak zmieniała się Polska. Idealny żeby poznać różnice między miastem a wsią."},
+  {t:"Pitbull",y:2005,g:"kryminal",d:"00s",serial:false,yt:"Pitbull 2005 cały film",desc:"Brutalna prawda o polskiej policji — korupcja, przemoc i szara strefa między prawem a bezprawiem. Patryk Vega zadebiutował filmem, który wstrząsnął polskim kinem. Bardzo naturalistyczny język i zero upiększania rzeczywistości."},
+  {t:"Quo Vadis",y:2001,g:"historyczny",d:"00s",serial:false,yt:"Quo Vadis 2001 cały film",desc:"Epicka adaptacja powieści Sienkiewicza — Rzym cesarza Nerona, prześladowania chrześcijan i wielka miłość Winicjusza do Ligii. Największa polska produkcja kostiumowa — czytana przez każdego polskiego ucznia w szkole."},
+  {t:"Dzień świra",y:2002,g:"komedia",d:"00s",serial:false,yt:"Dzień świra 2002 cały film",desc:"Jeden dzień z życia neurotycznego nauczyciela polskiego. Monologi wewnętrzne, egzystencjalny kryzys i czarny humor w polskim wydaniu. Marek Koterski stworzył film, który każdy Polak rozumie boleśnie dobrze — i cytuje przy każdej okazji."},
+  {t:"Ida",y:2013,g:"dramat",d:"10s",serial:false,yt:"Ida 2013 cały film",desc:"Nowicjuszka zakonna odkrywa że pochodzi z żydowskiej rodziny i wyrusza w podróż by poznać swoją przeszłość. Czarno-biały, minimalistyczny arcydzieło Pawła Pawlikowskiego. Oscar dla najlepszego filmu obcojęzycznego — polska duma."},
+  {t:"Bogowie",y:2014,g:"dramat",d:"10s",serial:false,yt:"Bogowie 2014 cały film",desc:"Historia prof. Zbigniewa Religi — kardiochirurga, który jako pierwszy w Polsce przeszczepił serce. Tomasz Kot w roli życia. Film o pasji, ambicji i walce z systemem — ogromny hit, który wzruszył całą Polskę."},
+  {t:"Kler",y:2018,g:"dramat",d:"10s",serial:false,yt:"Kler 2018 cały film",desc:"Smarzowski bierze na warsztat Kościół katolicki w Polsce — trzech księży, trzy dramaty, jeden system. Najbardziej kontrowersyjny i najchętniej oglądany film w historii polskiego kina. Żeby rozumieć dzisiejszą Polskę — ten film jest obowiązkowy."},
+  {t:"Zimna wojna",y:2018,g:"dramat",d:"10s",serial:false,yt:"Zimna wojna 2018 cały film",desc:"Tragiczna miłość pianisty i śpiewaczki rozgrywająca się między Polską, Paryżem i Berlinem w czasach zimnej wojny. Czarno-biały, przepiękny i przejmujący. Drugi Oscar Pawlikowskiego — i jeden z najpiękniejszych filmów miłosnych w europejskim kinie."},
+  {t:"Boże ciało",y:2019,g:"dramat",d:"10s",serial:false,yt:"Boże ciało 2019 cały film",desc:"Młody chłopak z poprawczaka podszywa się pod księdza w małej wiosce. Nominacja do Oscara i jeden z najbardziej dyskutowanych polskich filmów ostatnich lat. Bada polską religijność, hipokryzję i potrzebę wiary w sposób, którego nie znajdziesz nigdzie indziej."},
+  {t:"Wołyń",y:2016,g:"historyczny",d:"10s",serial:false,yt:"Wołyń 2016 cały film",desc:"Jeden z najtrudniejszych filmów na tej liście. Opowiada o masakrze Polaków na Wołyniu w 1943 roku. Smarzowski nie oszczędza widza. Temat wciąż bardzo wrażliwy w Polsce — żeby rozumieć polską historię, trzeba go znać."},
+];
+
+const decadeLabels={"40s":"Lata 40.","60s":"Lata 60.","70s":"Lata 70.","80s":"Lata 80.","90s":"Lata 90.","00s":"Lata 2000.","10s":"Lata 2010–2020"};
+const decadeOrder=["40s","60s","70s","80s","90s","00s","10s"];
+let activeFilter="all";
+
+function filter(btn,f){
+  activeFilter=f;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+
+function toggle(id){
+  const desc=document.getElementById("desc-"+id);
+  const chev=document.getElementById("chev-"+id);
+  desc.classList.toggle("open");
+  chev.classList.toggle("open");
+}
+
+function render(){
+  const content=document.getElementById("content");
+  content.innerHTML="";
+  const filtered=activeFilter==="all"?films:activeFilter==="serial"?films.filter(f=>f.serial):films.filter(f=>f.g===activeFilter);
+  document.getElementById("count").textContent=filtered.length+" filmów / seriali";
+  const byDecade={};
+  filtered.forEach(f=>{if(!byDecade[f.d])byDecade[f.d]=[];byDecade[f.d].push(f);});
+  decadeOrder.forEach(d=>{
+    if(!byDecade[d])return;
+    const section=document.createElement("div");
+    section.className="decade-section";
+    const grid=document.createElement("div");
+    grid.className="films-grid";
+    section.innerHTML=`<div class="decade-label">${decadeLabels[d]}</div>`;
+    section.appendChild(grid);
+    content.appendChild(section);
+    byDecade[d].forEach((f,i)=>{
+      const id=d+"_"+i;
+      const url="https://www.youtube.com/results?search_query="+encodeURIComponent(f.yt);
+      const card=document.createElement("div");
+      card.className="film-card";
+      card.innerHTML=`
+        <div class="film-header" onclick="toggle('${id}')">
+          <div>
+            <div class="film-title">${f.t}</div>
+            <div class="film-meta">
+              <span class="film-year">${f.y}</span>
+              <span class="genre-badge g-${f.g}">${f.g}</span>
+              ${f.serial?'<span class="serial-badge">serial</span>':""}
+            </div>
+          </div>
+          <span class="chevron" id="chev-${id}">▾</span>
+        </div>
+        <div class="film-desc" id="desc-${id}">
+          ${f.desc}
+          <br><a class="watch-link" href="${url}" target="_blank">▶ Szukaj na YouTube</a>
+        </div>`;
+      grid.appendChild(card);
+    });
+  });
+}
+render();
+</script>
+</body>
+</html>
